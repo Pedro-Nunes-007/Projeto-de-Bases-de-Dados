@@ -1,0 +1,45 @@
+-- FUNCTION: public.finalizar_compras()
+
+-- DROP FUNCTION public.finalizar_compras();
+
+CREATE FUNCTION public.finalizar_compras()
+    RETURNS trigger
+    LANGUAGE 'plpgsql'
+    COST 100
+    VOLATILE NOT LEAKPROOF
+AS $BODY$
+DECLARE
+	quantidade_stock integer;
+	saldo_atual float;
+	preco float;
+	saldo_final float;
+BEGIN
+	SELECT quantidade FROM stock WHERE album_id_album = new.album_id_album INTO quantidade_stock;
+	if quantidade_stock < new.quantidade then 
+		raise exception 'Não existe stock suficiente para efetuar a sua compra. Stock atual: %', quantidade;
+	end if;
+	UPDATE stock SET quantidade = (quantidade_stock-new.quantidade) WHERE album_id_album = new.album_id_album;
+	SELECT saldo FROM cliente WHERE pessoa_id = new.cliente_pessoa_id INTO saldo_atual;
+	SELECT preco_atual FROM album WHERE id_album = new.album_id_album INTO preco;
+	saldo_final = saldo_atual - preco*new.quantidade;
+	if saldo_final < 0 then 
+		raise exception 'Não tem saldo suficiente para efetuar a sua compra.';
+	end if;
+	UPDATE cliente SET saldo = saldo_final WHERE pessoa_id = new.cliente_pessoa_id;
+	return new;
+END;
+$BODY$;
+
+ALTER FUNCTION public.finalizar_compras()
+    OWNER TO postgres;
+
+
+-- Trigger: trigger1
+
+-- DROP TRIGGER trigger1 ON public.historico_compras;
+
+CREATE TRIGGER trigger1
+    AFTER INSERT
+    ON public.historico_compras
+    FOR EACH ROW
+    EXECUTE FUNCTION public.finalizar_compras();

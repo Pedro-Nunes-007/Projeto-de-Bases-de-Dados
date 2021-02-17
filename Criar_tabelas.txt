@@ -1,0 +1,118 @@
+CREATE TABLE cliente (
+	saldo		 FLOAT(8) DEFAULT 20,
+	data_registo	 DATE,
+	pessoa_mail	 VARCHAR(512),
+	pessoa_password VARCHAR(512),
+	pessoa_nome	 VARCHAR(512),
+	pessoa_id	 INTEGER,
+	PRIMARY KEY(pessoa_id)
+);
+
+CREATE TABLE album (
+	editora	 VARCHAR(512),
+	nome	 VARCHAR(512),
+	ano	 INTEGER,
+	id_album	 INTEGER,
+	preco_atual FLOAT(8),
+	PRIMARY KEY(id_album)
+);
+
+CREATE TABLE musica (
+	nome		 VARCHAR(512),
+	id		 INTEGER,
+	album_id_album INTEGER NOT NULL,
+	PRIMARY KEY(id)
+);
+
+CREATE TABLE administrador (
+	pessoa_mail	 VARCHAR(512),
+	pessoa_password VARCHAR(512),
+	pessoa_nome	 VARCHAR(512),
+	pessoa_id	 INTEGER,
+	PRIMARY KEY(pessoa_id)
+);
+
+CREATE TABLE mensagem (
+	texto			 VARCHAR(512),
+	data			 DATE,
+	n_mensagem		 INTEGER,
+	administrador_pessoa_id INTEGER NOT NULL,
+	PRIMARY KEY(n_mensagem)
+);
+
+CREATE TABLE historico_compras (
+	data		 DATE,
+	quantidade	 INTEGER,
+	n_fatura		 INTEGER,
+	valor_gasto	 FLOAT(8),
+	album_id_album	 INTEGER,
+	cliente_pessoa_id INTEGER,
+	PRIMARY KEY(n_fatura,album_id_album,cliente_pessoa_id)
+);
+
+CREATE TABLE stock (
+	quantidade	 INTEGER,
+	album_id_album INTEGER,
+	PRIMARY KEY(album_id_album)
+);
+
+CREATE TABLE historico_correcoes (
+	data_inicio		 DATE,
+	data_fim		 DATE,
+	preco			 FLOAT(8),
+	album_id_album		 INTEGER,
+	administrador_pessoa_id INTEGER NOT NULL,
+	PRIMARY KEY(data_inicio,album_id_album)
+);
+
+CREATE TABLE artista (
+	nome VARCHAR(512),
+	id	 INTEGER,
+	PRIMARY KEY(id)
+);
+
+CREATE TABLE genero (
+	nome VARCHAR(512),
+	PRIMARY KEY(nome)
+);
+
+CREATE TABLE artista_musica (
+	artista_id INTEGER,
+	musica_id	 INTEGER,
+	PRIMARY KEY(artista_id,musica_id)
+);
+
+CREATE TABLE album_genero (
+	album_id_album INTEGER,
+	genero_nome	 VARCHAR(512),
+	PRIMARY KEY(album_id_album,genero_nome)
+);
+
+CREATE TABLE cliente_mensagem (
+	cliente_pessoa_id	 INTEGER,
+	mensagem_n_mensagem INTEGER,
+	PRIMARY KEY(cliente_pessoa_id,mensagem_n_mensagem)
+);
+
+CREATE TABLE album_artista (
+	album_id_album INTEGER,
+	artista_id	 INTEGER,
+	PRIMARY KEY(album_id_album,artista_id)
+);
+
+ALTER TABLE musica ADD CONSTRAINT musica_fk1 FOREIGN KEY (album_id_album) REFERENCES album(id_album);
+ALTER TABLE mensagem ADD CONSTRAINT mensagem_fk1 FOREIGN KEY (administrador_pessoa_id) REFERENCES administrador(pessoa_id);
+ALTER TABLE historico_compras ADD CONSTRAINT historico_compras_fk1 FOREIGN KEY (album_id_album) REFERENCES album(id_album);
+ALTER TABLE historico_compras ADD CONSTRAINT historico_compras_fk2 FOREIGN KEY (cliente_pessoa_id) REFERENCES cliente(pessoa_id);
+ALTER TABLE stock ADD CONSTRAINT stock_fk1 FOREIGN KEY (album_id_album) REFERENCES album(id_album);
+ALTER TABLE historico_correcoes ADD CONSTRAINT historico_correcoes_fk1 FOREIGN KEY (album_id_album) REFERENCES album(id_album);
+ALTER TABLE historico_correcoes ADD CONSTRAINT historico_correcoes_fk2 FOREIGN KEY (administrador_pessoa_id) REFERENCES administrador(pessoa_id);
+ALTER TABLE artista_musica ADD CONSTRAINT artista_musica_fk1 FOREIGN KEY (artista_id) REFERENCES artista(id);
+ALTER TABLE artista_musica ADD CONSTRAINT artista_musica_fk2 FOREIGN KEY (musica_id) REFERENCES musica(id);
+ALTER TABLE album_genero ADD CONSTRAINT album_genero_fk1 FOREIGN KEY (album_id_album) REFERENCES album(id_album);
+ALTER TABLE album_genero ADD CONSTRAINT album_genero_fk2 FOREIGN KEY (genero_nome) REFERENCES genero(nome);
+ALTER TABLE cliente_mensagem ADD CONSTRAINT cliente_mensagem_fk1 FOREIGN KEY (cliente_pessoa_id) REFERENCES cliente(pessoa_id);
+ALTER TABLE cliente_mensagem ADD CONSTRAINT cliente_mensagem_fk2 FOREIGN KEY (mensagem_n_mensagem) REFERENCES mensagem(n_mensagem);
+ALTER TABLE album_artista ADD CONSTRAINT album_artista_fk1 FOREIGN KEY (album_id_album) REFERENCES album(id_album);
+ALTER TABLE album_artista ADD CONSTRAINT album_artista_fk2 FOREIGN KEY (artista_id) REFERENCES artista(id);
+
